@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum CertLevel {
+  OW
+  AOW
+  RESCUE
+  DM
+  INSTRUCTOR
+}
+
+enum TripType {
+  FUN
+  TRAINING
+}
+
+enum SignupStatus {
+  CONFIRMED
+  WAITLIST
+  CANCELLED
+}
+
+enum AuthProvider {
+  EMAIL
+  WECHAT
+  ICLOUD_OTP
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  email                 String?       @unique
+  passwordHash          String?
+  wechatOpenId          String?       @unique
+  authProvider          AuthProvider  @default(EMAIL)
+  name                  String
+  phone                 String?
+  role                  Role          @default(MEMBER)
+  approved              Boolean       @default(false)
+  certLevel             CertLevel     @default(OW)
+  diveCount             Int           @default(0)
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  signups               TripSignup[]
+  tripsCreated          Trip[]        @relation("TripCreator")
+  announcements         Announcement[]
+}
+
+model Trip {
+  id               String       @id @default(cuid())
+  title            String
+  site             String
+  date             DateTime
+  type             TripType
+  maxParticipants  Int
+  minCert          CertLevel    @default(OW)
+  notes            String?
+  createdById      String
+  createdBy        User         @relation("TripCreator", fields: [createdById], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  signups          TripSignup[]
+}
+
+model TripSignup {
+  id             String       @id @default(cuid())
+  tripId         String
+  userId         String
+  status         SignupStatus @default(CONFIRMED)
+  waitlistOrder  Int?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  trip           Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  pinned      Boolean  @default(false)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -1,26 +1,45 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ocean-50: #eff6ff;
+  --color-ocean-100: #dbeafe;
+  --color-ocean-600: #0369a1;
+  --color-ocean-700: #075985;
+  --color-ocean-800: #0c4a6e;
+  --color-ocean-900: #082f49;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.card {
+  @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-sm;
+}
+
+.btn-primary {
+  @apply rounded-xl bg-ocean-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-ocean-800 disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-ocean-600 focus:ring-2 focus:ring-ocean-100;
+}
+
+.label {
+  @apply mb-1 block text-sm font-medium text-slate-700;
 }
