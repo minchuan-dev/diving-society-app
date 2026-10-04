@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { getAuthSecret } from "@/lib/secret";
 
 const PUBLIC_PATHS = [
+  "/",
   "/login",
   "/register",
   "/api/auth/login",
@@ -15,7 +17,7 @@ const PUBLIC_PATHS = [
   "/api/locale",
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -35,10 +37,7 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    const secret = new TextEncoder().encode(
-      process.env.AUTH_SECRET ?? "dev-secret-change-in-production",
-    );
-    await jwtVerify(token, secret);
+    await jwtVerify(token, getAuthSecret());
     return NextResponse.next();
   } catch {
     if (pathname.startsWith("/api/")) {

@@ -1,9 +1,19 @@
 import "dotenv/config";
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/db";
 
+function seedPassword(envKey: string) {
+  return process.env[envKey] || randomBytes(9).toString("base64url");
+}
+
 async function main() {
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  const adminPassword = seedPassword("SEED_ADMIN_PASSWORD");
+  const memberPassword = seedPassword("SEED_MEMBER_PASSWORD");
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
+  const adminExisted = await prisma.user.findUnique({
+    where: { email: "admin@bluereef.club" },
+  });
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@bluereef.club" },
@@ -22,7 +32,10 @@ async function main() {
     },
   });
 
-  const memberHash = await bcrypt.hash("member123", 10);
+  const memberHash = await bcrypt.hash(memberPassword, 10);
+  const memberExisted = await prisma.user.findUnique({
+    where: { email: "diver@example.com" },
+  });
   const member = await prisma.user.upsert({
     where: { email: "diver@example.com" },
     update: {},
@@ -88,8 +101,13 @@ async function main() {
   }
 
   console.log("Seed complete.");
-  console.log("Admin: admin@bluereef.club / admin123");
-  console.log("Member: diver@example.com / member123");
+  // upsert 不会覆盖已有账号的密码，所以只在首次创建时打印。
+  if (!adminExisted) {
+    console.log(`Admin: admin@bluereef.club / ${adminPassword}`);
+  }
+  if (!memberExisted) {
+    console.log(`Member: diver@example.com / ${memberPassword}`);
+  }
 }
 
 main()

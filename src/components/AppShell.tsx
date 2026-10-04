@@ -24,10 +24,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-full flex-col bg-slate-50">
       <header className="bg-gradient-to-r from-ocean-800 to-ocean-600 text-white shadow-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-4">
-          <div>
+          <Link href="/">
             <p className="text-lg font-semibold">{dict.appName}</p>
             <p className="text-xs text-white/80">{dict.tagline}</p>
-          </div>
+          </Link>
           <LanguageSwitcher locale={locale} label={dict.common.language} />
         </div>
       </header>

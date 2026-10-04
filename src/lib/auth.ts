@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getAuthSecret } from "@/lib/secret";
 import type { Role } from "@/generated/prisma/client";
 
 const SESSION_COOKIE = "dive_session";
@@ -12,11 +13,6 @@ export type SessionPayload = {
   role: Role;
   name: string;
 };
-
-function getSecret() {
-  const secret = process.env.AUTH_SECRET ?? "dev-secret-change-in-production";
-  return new TextEncoder().encode(secret);
-}
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
@@ -31,7 +27,7 @@ export async function createSession(payload: SessionPayload) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(getSecret());
+    .sign(getAuthSecret());
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
@@ -54,7 +50,7 @@ export async function getSession(): Promise<SessionPayload | null> {
   if (!token) return null;
 
   try {
-    const { payload } = await jwtVerify(token, getSecret());
+    const { payload } = await jwtVerify(token, getAuthSecret());
     return payload as unknown as SessionPayload;
   } catch {
     return null;
